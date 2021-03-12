@@ -1,0 +1,280 @@
+package com.company;
+
+import java.util.Scanner;
+
+public class Main   {
+    public static void main(String[] args) {
+        Scanner cin = new Scanner(System.in);
+        System.out.println("Project! Bot which show students list by barcode" +
+                " and show their marks of java");
+        System.out.println("Please chose the case!");
+        int menu = 0;
+        System.out.println("1.Add new student");
+        System.out.println("2.Delete student");
+        System.out.println("3.Show students list");
+        System.out.println("4.Show student's info by barcode");
+        System.out.println("5.Show student's mark by barcode");
+        menu = cin.nextInt();
+        switch (menu) {
+
+            case 1:
+
+                Students s=new Students();
+                s.InsertStudent();
+                break;
+            case 2:
+
+                Students s2=new Students();
+                s2.DeleteStudent();
+                break;
+            case 3:
+
+                Students s3=new Students();
+                s3.getInfoAllStudents();
+                break;
+            case 4:
+
+                Students s4=new Students();
+                s4.getInfoStudent();
+                break;
+            case 5:
+
+                Counter c=new Counter() {
+                    @Override
+                    public void Count() {
+                        Count();
+                    }
+                };
+                break;
+            default:
+                System.out.println("Chose right option !!!");
+                System.out.println("Please try again!");
+
+        }
+    }
+}
+
+
+package com.company;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.*;
+import java.sql.Connection;
+import java.util.Scanner;
+
+public class Students { // Variables which would be used in following methods
+    Scanner cin = new Scanner(System.in);
+
+    private int barcode;
+    private String Name;
+    private String Surname;
+    private String Group;
+    private String barcode1;
+
+    Students() {
+    }
+
+    Students(int barcode, String Name, String Surname, String Group) {
+        this.barcode = barcode;
+        this.Name = Name;
+        this.Surname = Surname;
+        this.Group = Group;
+
+    }
+
+    Students(String barcode1 ) {
+        this.barcode1 = barcode1;
+
+    }
+
+    protected final static String url = "jdbc:postgresql://localhost:5432/AITUStudents";
+    protected final static String user = "postgres"; //connecting for community IJ
+    protected final static String password = "4741";
+
+
+    public Connection connect() {//connecting for community IJ
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection(url, user, password);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+
+        }
+        return conn;
+
+    }
+
+    public final void InsertStudent() { // for add a new student in the sql table
+        Connection con = null;
+        ResultSet rs = null;
+        try {
+            con = DriverManager.getConnection(Students.url, Students.user, Students.password);
+
+            System.out.println("Введите баркод студента: ");//input need variables
+            barcode = cin.nextInt();
+            System.out.println("Введите Имя и Фамилию студента: ");
+            Name = cin.next();
+            Surname = cin.next();
+            System.out.println("Введите группу студента: ");
+            Group = cin.next();
+
+            PreparedStatement stmt = con.prepareStatement("INSERT INTO Students (barcode, name , Surname ,  Group ) VALUES(?,?,?,?)");
+            stmt.setInt(1, barcode); // set column in SQL table
+            stmt.setString(2, Name);
+            stmt.setString(3, Surname);
+            stmt.setString(4, Group);
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) { //Output a problem if we have it
+            System.out.println(e.getMessage()+" Ууупс. Что та пошла не так, попробуйте через несколько минут.");
+        }
+    }
+    public final void DeleteStudent() {//delete column with info about student
+        Connection con = null;
+        ResultSet rs = null;
+        Statement stmt = null;
+        try {
+            con = DriverManager.getConnection(Students.url, Students.user, Students.password);
+            stmt = con.createStatement();
+            System.out.println("Внимание! Вы хотите удалить все данные о студенте!");
+            System.out.println("Введите баркод студента: ");
+            int delete = cin.nextInt();
+            String pos = "DELETE FROM Students WHERE Barcode = " + delete;
+            stmt.executeQuery(pos);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void getInfoAllStudents() { // output a sql table with students' info
+        Connection con = null;
+        ResultSet rs = null;
+        Statement stmt = null;
+        try {
+            con = DriverManager.getConnection(Students.url, Students.user, Students.password);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery("select * from Students ");
+            while (rs.next()) {
+                System.out.println("Barcode : " + rs.getInt("Barcode"));
+                System.out.println("Full Name : " + rs.getString("Name") + " " + rs.getString("Surname"));
+                System.out.println("Group : " + rs.getString("Group"));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+
+    public void getInfoStudent() { // output info about only one student bu barcode
+        Connection con = null;
+        ResultSet rs = null;
+        Statement stmt = null;
+        try {
+            con = DriverManager.getConnection(Students.url, Students.user, Students.password);
+            stmt = con.createStatement();
+            System.out.println("Введите barcode студента: ");
+            barcode1 = cin.next();
+
+            rs = stmt.executeQuery("select * from Students where Barcode ="+ barcode1);
+            while (rs.next()) {
+                if (barcode1.equals(rs.getString("Barcode"))) {
+                    System.out.println("Barcode : " + rs.getInt("barcode"));
+                    System.out.println("Full Name : " + rs.getString("first_name") + " " + rs.getString("last_name"));
+                    System.out.println("Group : " + rs.getString("Group"));
+                    System.out.println("===============================================");
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+
+package com.company;
+
+import java.util.Scanner;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.*;
+import java.sql.Connection;
+
+public class Results extends Counter{
+    Scanner cin = new Scanner(System.in);
+
+    private int id;//mean barcode
+
+    Results(){}
+    Results(int id2, int id){
+        this.id = id;
+    }
+
+    protected static String url = "jdbc:postgresql://localhost:5432/AITUStudents";
+    protected static String user = "postgres";
+    protected static String password = "4741";
+
+    public Connection connect() {
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection(url, user, password);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage()+"Try again after 5 minutes");
+
+        }
+        return conn;
+
+    }
+
+    @Override
+    public void Count() { //Find student by barcode and show their marks.
+        Connection con = null;
+        ResultSet rs = null;
+        Statement stmt = null;//for first show all students
+        try {
+            con = DriverManager.getConnection(Results.url, Results.user, Results.password);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery("select * from Students ");
+            System.out.println("Лист студентов:");
+            while (rs.next()){
+                System.out.println("===================================================");
+                System.out.println("Students' full name: " + rs.getString("Name") + " " + rs.getString("Surname"));
+                System.out.println("Student barcode: " + rs.getInt("Barcode"));
+                System.out.println("===================================================");
+            }
+            System.out.println("Введите barcode студента, чтобы посмотреть его результаты.");
+            id  = cin.nextInt();
+            rs = stmt.executeQuery("select * from gpa ");
+            System.out.println("Результаты...");// show marks by barcode
+            while (rs.next()) {
+                if (id == rs.getInt("barcode")) {
+                    System.out.println("Barcode : " + rs.getInt("barcode"));
+                    System.out.println("Java mark : " + rs.getInt("Java mark"));
+                    System.out.println("===============================================");
+
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage()+" Return 5 minutes later");
+        }
+    }
+}
+
+package com.company;
+
+public abstract class Counter {// just abstract class
+    public abstract void Count();
+}
+
+Students table
+201010,Ernar,Ayeskhan,SE-2004
+201020,Zharas,Seitkhan,CS-2003
+201030,Zangar,Autov,SE-2005
+201040,Beknur,Palenshe,TS-2002
+201050,Nurkhan,Palenshe,CS-2004
+
+GPA table
+201010,70
+201020,81
+201030,65
+201040,40
+201050,100
